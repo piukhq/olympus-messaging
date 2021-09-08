@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "olympus-messaging"
+version = "0.1.0"
+description = ""
+authors = ["Chris Latham <cl@bink.com>"]
+readme = "README.md"
+packages = [{include = "olympus_messaging"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+black = "^21.8-beta.0"
+flake8 = "^3.9.2"
+mypy = "^0.910"
+pytest = "^6.2.5"
+ptpython = "^3.0.19"
+xenon = "^0.7.3"
+pytest-cov = "^2.12.1"
+isort = "^5.9.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
