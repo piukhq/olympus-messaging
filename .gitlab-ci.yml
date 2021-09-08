@@ -5,7 +5,7 @@ stages:
 default:
   image: ghcr.io/binkhq/python:3.9
 
-test:style: &test
+style: &test
   stage: test
   before_script:
     - poetry install
@@ -14,17 +14,17 @@ test:style: &test
     - poetry run black --check .
     - poetry run isort --check --diff --color .
 
-test:complexity:
+complexity:
   <<: *test
   script:
     - poetry run xenon .
 
-test:type-check:
+type-check:
   <<: *test
   script:
     - poetry run mypy olympus_messaging
 
-test:pytest:
+unit-tests:
   <<: *test
   script:
     - poetry run pytest --verbose --cov=olympus_messaging --cov-report=xml --junitxml=report.xml
