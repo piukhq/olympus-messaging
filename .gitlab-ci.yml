@@ -27,7 +27,7 @@ type-check:
 unit-tests:
   <<: *test
   script:
-    - poetry run pytest --verbose --cov=olympus_messaging --cov-report=xml --junitxml=report.xml
+    - poetry run pytest --verbose --cov=olympus_messaging --cov-report=term --cov-report=xml --junitxml=report.xml
   artifacts:
     when: always
     reports:
