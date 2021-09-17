@@ -7,11 +7,11 @@ Maps message_type strings to message classes.
 _message_classes: dict[str, Type["Message"]] = {}
 
 
-def build_message(properties: Mapping[str, str], body: Mapping[str, str]) -> "Message":
-    message_type = properties["type"]
+def build_message(metadata: Mapping[str, str], body: Mapping[str, str]) -> "Message":
+    message_type = metadata["type"]
     message_class = _message_classes[message_type]
-    property_fields = Message.properties_to_fields(properties)
-    return message_class(**property_fields, **body)
+    metadata_fields = Message.metadata_to_fields(metadata)
+    return message_class(**metadata_fields, **body)
 
 
 def message_type(message_type: str) -> Callable:
@@ -37,14 +37,14 @@ class Message:
             raise TypeError(f"{type(self).__name__} has no message_type")
 
     @staticmethod
-    def properties_to_fields(properties: Mapping[str, str]) -> dict:
+    def metadata_to_fields(metadata: Mapping[str, str]) -> dict:
         return {
-            "channel": properties["channel"],
-            "transaction_id": properties.get("transaction-id"),
-            "bink_user_id": properties.get("bink-user-id"),
-            "request_id": properties["request-id"],
-            "loyalty_plan": properties["loyalty-plan"],
-            "account_id": properties.get("account-id"),
+            "channel": metadata["channel"],
+            "transaction_id": metadata.get("transaction-id"),
+            "bink_user_id": metadata.get("bink-user-id"),
+            "request_id": metadata["request-id"],
+            "loyalty_plan": metadata["loyalty-plan"],
+            "account_id": metadata.get("account-id"),
         }
 
     @property
@@ -52,8 +52,8 @@ class Message:
         raise NotImplementedError(f"{type(self).__name__} must implement message_type")
 
     @property
-    def properties(self) -> dict:
-        properties = {
+    def metadata(self) -> dict:
+        metadata = {
             "type": self.message_type,
             "channel": self.channel,
             "request-id": self.request_id,
@@ -61,15 +61,15 @@ class Message:
         }
 
         if self.transaction_id:
-            properties["transaction-id"] = self.transaction_id
+            metadata["transaction-id"] = self.transaction_id
 
         if self.bink_user_id:
-            properties["bink-user-id"] = self.bink_user_id
+            metadata["bink-user-id"] = self.bink_user_id
 
         if self.account_id:
-            properties["account-id"] = self.account_id
+            metadata["account-id"] = self.account_id
 
-        return properties
+        return metadata
 
     @property
     def body(self) -> dict:

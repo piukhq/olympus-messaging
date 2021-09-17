@@ -45,8 +45,8 @@ def test_join_dispatch(join_message: JoinApplication) -> None:
     assert mock_receivers[2].call_count == 2
 
 
-def test_serialization_with_standard_properties(join_message: JoinApplication) -> None:
-    expected_properties = {
+def test_serialization_with_standard_metadata(join_message: JoinApplication) -> None:
+    expected_metadata = {
         "type": join_message.message_type,
         "channel": join_message.channel,
         "request-id": join_message.request_id,
@@ -54,18 +54,18 @@ def test_serialization_with_standard_properties(join_message: JoinApplication) -
     }
     expected_body = {"join_data": join_message.join_data}
 
-    assert join_message.properties == expected_properties
+    assert join_message.metadata == expected_metadata
     assert join_message.body == expected_body
 
 
-def test_serialization_with_optional_properties(join_message: JoinApplication) -> None:
+def test_serialization_with_optional_metadata(join_message: JoinApplication) -> None:
     join_message = dataclasses.replace(
         join_message,
         transaction_id="test-transaction-id-123",
         bink_user_id="test-bink-user-id-123",
         account_id="test-account-id-123",
     )
-    expected_properties = {
+    expected_metadata = {
         "type": join_message.message_type,
         "channel": join_message.channel,
         "request-id": join_message.request_id,
@@ -76,7 +76,7 @@ def test_serialization_with_optional_properties(join_message: JoinApplication) -
     }
     expected_body = {"join_data": join_message.join_data}
 
-    assert join_message.properties == expected_properties
+    assert join_message.metadata == expected_metadata
     assert join_message.body == expected_body
 
 
@@ -134,9 +134,9 @@ def test_message_with_no_serialize_body() -> None:
 
 
 def test_build_message(join_message: JoinApplication) -> None:
-    properties = join_message.properties
+    metadata = join_message.metadata
     body = join_message.body
 
-    message = build_message(properties, body)
+    message = build_message(metadata, body)
 
     assert message == join_message
