@@ -20,7 +20,7 @@ def publisher(queue: Queue) -> None:
         },
     )
 
-    queue.append((message.properties, message.body))
+    queue.append((message.metadata, message.body))
 
     print(f"Publisher sent: {type(message).__name__}")
     pprint(vars(message))
@@ -40,8 +40,8 @@ def consumer(queue: Queue) -> None:
 
     # process messages off the queue
     while queue:
-        properties, body = queue.pop(0)
-        message = build_message(properties, body)
+        metadata, body = queue.pop(0)
+        message = build_message(metadata, body)
         dispatcher.dispatch(message)
 
 
