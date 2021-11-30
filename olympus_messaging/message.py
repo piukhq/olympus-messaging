@@ -76,9 +76,7 @@ class Message:
         return self.serialize_body()
 
     def serialize_body(self) -> dict:
-        raise NotImplementedError(
-            f"{type(self).__name__} must implement serialize_body"
-        )
+        raise NotImplementedError(f"{type(self).__name__} must implement serialize_body")
 
 
 @dataclass(frozen=True)

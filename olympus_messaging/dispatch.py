@@ -14,9 +14,7 @@ class MessageDispatcher:
     def connect(self, message_class: Type[Message], receiver: MessageHandler) -> None:
         self.handlers[message_class].add(receiver)
 
-    def disconnect(
-        self, message_class: Type[Message], receiver: MessageHandler
-    ) -> None:
+    def disconnect(self, message_class: Type[Message], receiver: MessageHandler) -> None:
         self.handlers[message_class].remove(receiver)
 
     def dispatch(self, message: Message) -> None:
