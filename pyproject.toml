@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "olympus-messaging"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 authors = ["Chris Latham <cl@bink.com>"]
 readme = "README.md"
 packages = [{include = "olympus_messaging"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 black = "^21.8-beta.0"
