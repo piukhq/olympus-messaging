@@ -1,9 +1,9 @@
 import dataclasses
 from unittest.mock import MagicMock, call
-
+import uuid
 import pytest
 
-from olympus_messaging import JoinApplication, Message, MessageDispatcher, build_message
+from olympus_messaging import JoinApplication, LoyaltyCardRemovedBink, Message, MessageDispatcher, build_message
 from olympus_messaging.message import message_type
 
 
@@ -23,26 +23,53 @@ def join_message() -> JoinApplication:
     )
 
 
-def test_join_dispatch(join_message: JoinApplication) -> None:
+@pytest.fixture
+def loyalty_card_removed_bink_message() -> LoyaltyCardRemovedBink:
+    return LoyaltyCardRemovedBink(
+        channel="lloyds.test.com",
+        transaction_id=str(uuid.uuid1()),
+        bink_user_id=str(1234567),
+        request_id="test-request-124",
+        account_id="12213335436436",        # main answer/card_number
+        loyalty_plan="my_scheme_slug",
+        message_data={}  
+    )
+
+
+def _message_dispatch_test(message_fixture: Message, message_class: type[Message]) -> None:
     mock_receivers = [MagicMock(), MagicMock(), MagicMock()]
     dispatcher = MessageDispatcher()
 
     for receiver in mock_receivers:
-        dispatcher.connect(JoinApplication, receiver)
+        dispatcher.connect(message_class, receiver)
 
-    dispatcher.dispatch(join_message)
+    dispatcher.dispatch(message_fixture)
 
     for receiver in mock_receivers:
         assert receiver.call_count == 1
-        assert receiver.call_args == call(join_message)
+        assert receiver.call_args == call(message_fixture)
 
-    dispatcher.disconnect(JoinApplication, mock_receivers[1])
+    dispatcher.disconnect(message_class, mock_receivers[1])
 
-    dispatcher.dispatch(join_message)
+    dispatcher.dispatch(message_fixture)
 
     assert mock_receivers[0].call_count == 2
     assert mock_receivers[1].call_count == 1
     assert mock_receivers[2].call_count == 2
+
+
+"""
+Add dispatch test for each new message class by calling "_message_dispatch_test" with your fixture message and
+your message class:
+"""
+
+
+def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemovedBink) -> None:
+    _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemovedBink)
+
+
+def test_join_dispatch(join_message: JoinApplication) -> None:
+    _message_dispatch_test(join_message, JoinApplication)
 
 
 def test_serialization_with_standard_metadata(join_message: JoinApplication) -> None:
