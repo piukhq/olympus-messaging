@@ -7,7 +7,9 @@
    * Current implementations use RabbitMQ and define messages from Hermes to Midas using RabbitMQ 
    * The message structure defines metadata which can be used for all messages and is passed in the message header
    * The body of the message contains business data which can be empty or bespoke per message 
-   * For more information about the join message and some proposed future messages see: https://hellobink.atlassian.net/wiki/spaces/ARCH/pages/2408513601/Join+Application+Message+to+Midas
+   * For more information about the join message and some proposed future messages 
+      see: https://hellobink.atlassian.net/wiki/spaces/ARCH/pages/2408513601/Join+Application+Message+to+Midas
+
 
 ### To use Olympus Messaging:
 1. Added to your project using pip, pipenv or poetry.
@@ -27,6 +29,7 @@ def to_midas(message: Message) -> None:
 def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntry):
 
     message = LoyaltyCardRemovedBink(
+        # Note: The message type will be auto added to the message
         channel=scheme_account_entry.user.bundle_id,
         transaction_id=str(uuid.uuid1()),
         bink_user_id=str(scheme_account_entry.user.id),
@@ -40,18 +43,21 @@ def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntr
 
 
 ```
-        
 
 3. On receiving side:
-    The example shows how MessageDispatcher() works.  To illustrate how this may be used with a transport
-    layer see this example from Midas using kombu:
+   * The included dispatcher is optional a bespoke dispatcher can easily be integrated to use the message name stored in the variable named "type"
+   * The included dispatcher provides a convenient light-weight mechanism to connect messages to functions
+   * The dispatcher connect method links the received message to a handler function using the "type" metadata variable
+   * The build_message function used within dispatcher dispatch method does the linking to the handlers 
+   * The example.py shows in detail how MessageDispatcher() works
+   * The implementation in Midas is an example on how to integrate MessageDispatcher() to Kombu ie an overview is
 ```python
+
 import kombu
 from kombu.mixins import ConsumerMixin
 from olympus_messaging import LoyaltyCardRemovedBink, Message, MessageDispatcher, build_message
 import settings
-from app.scheme_account import JourneyTypes, SchemeAccountStatus
-from app.journeys.common import get_agent_class
+
 
 class TaskConsumer(ConsumerMixin):
     loyalty_request_queue = kombu.Queue(settings.LOYALTY_REQUEST_QUEUE)
@@ -60,17 +66,18 @@ class TaskConsumer(ConsumerMixin):
         self.connection = connection
         self.dispatcher = MessageDispatcher()
         
-        # you will need a similar entry for each per message linked to an on message receive method:
+        # you will need to a a similar entry for each per message linked to an on message receive method:
         self.dispatcher.connect(LoyaltyCardRemovedBink, self.on_loyalty_card_removed_bink)
+        # ... end of connects
 
+    # This links the message receive to the handler method defined above.
     def on_message(self, body: dict, message: kombu.Message) -> None:  # pragma: no cover
         try:
             self.dispatcher.dispatch(build_message(message.headers, body))
         finally:
             message.ack()
 
-    
-
+    # handler method for one of the LoyaltyCardRemovedBink message example
     @staticmethod
     def on_loyalty_card_removed_bink(message: Message) -> None:
         message = cast(LoyaltyCardRemovedBink, message)
@@ -84,18 +91,17 @@ class TaskConsumer(ConsumerMixin):
             "scheme_identifier": message.loyalty_plan,
             "message_uid": message.transaction_id
         }
-
-        try:
-            agent_class = get_agent_class(message_info["scheme_identifier"])
-            agent_class.loyalty_card_removed_bink(message_info)
-        except:
-            pass
-
+        
+        # etc...
 
 ```
 ### To add a new message to Olympus Messaging:
 
-1. Define the message dataclass in olympus_messaging.message.py In this example only meta data is required eg.
+1. Git clone Olympus messaging
+2. Although this is a library to run tests install as other projects with```poetry install --sync```
+    * If updating Please ensure poetry lock and pyproject.toml are consistent and commit both
+
+3. Define the message dataclass in olympus_messaging.message.py In this example only meta data is required eg.
 ```python
 @dataclass(frozen=True)
 @message_type("loyalty_card.removed.bink")
@@ -106,16 +112,19 @@ class LoyaltyCardRemovedBink(Message):
         return {"message_data": self.message_data}
 
 ```
-2. Add the message dataclass name to the imports in __init.py
-3. Add a test to the test_messaging - only a simple entry may be required eg
+4. Add the message dataclass name to the imports in __init.py 
+5. Add a test to the test_messaging - only a simple entry may be required eg
 ```python
 def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemovedBink) -> None:
     _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemovedBink)
 ````
-4. Run pytest on tests directory. 
-    * Although this is a library when used it can still be set up with```poetry install --sync``` 
-    * Then Tests can be run normally with pytest
-    * There is of course no code module to run
-    * Please ensure poetry lock and pyproject.toml are consistent as it may go undetected in use but will affect installing for testing
-   
-
+6. Run pytest on tests directory.
+    * Run normally with pytest
+    * There is, of course, no code module to run
+7. To test messaging locally make sure you have set up the communicating projects. Since this is a library the projects
+   will use the published version of Olympus Messaging. To use the local version under development simply point
+   to the version on your PC (in both/all local projects eg Hermes and Midas).
+```
+   For example in the virtual environment shell type
+   python3 -m pip install -e /Users/mmarsh/PycharmProjects/olympus-messaging
+```
