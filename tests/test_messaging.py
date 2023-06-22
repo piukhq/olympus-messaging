@@ -1,6 +1,7 @@
 import dataclasses
-from unittest.mock import MagicMock, call
 import uuid
+from unittest.mock import MagicMock, call
+
 import pytest
 
 from olympus_messaging import JoinApplication, LoyaltyCardRemovedBink, Message, MessageDispatcher, build_message
@@ -30,9 +31,9 @@ def loyalty_card_removed_bink_message() -> LoyaltyCardRemovedBink:
         transaction_id=str(uuid.uuid1()),
         bink_user_id=str(1234567),
         request_id="test-request-124",
-        account_id="12213335436436",        # main answer/card_number
+        account_id="12213335436436",  # main answer/card_number
         loyalty_plan="my_scheme_slug",
-        message_data={}  
+        message_data={},
     )
 
 
