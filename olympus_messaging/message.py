@@ -86,3 +86,12 @@ class JoinApplication(Message):
 
     def serialize_body(self) -> dict:
         return {"join_data": self.join_data}
+
+
+@dataclass(frozen=True)
+@message_type("loyalty_card.removed.bink")
+class LoyaltyCardRemovedBink(Message):
+    message_data: Mapping[str, str]
+
+    def serialize_body(self) -> dict:
+        return {"message_data": self.message_data}
