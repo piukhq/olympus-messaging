@@ -16,7 +16,7 @@
 2. On the sending side refer to the message class eg this example from Hermes:
 ```python
 
-from olympus_messaging import Message, LoyaltyCardRemovedBink
+from olympus_messaging import Message, LoyaltyCardRemoved
 from message_broker import SendingService
 
 message_sender = SendingService(dsn=RABBIT_DSN)
@@ -28,7 +28,7 @@ def to_midas(message: Message) -> None:
 # This function is called when the last linked Loyalty card is deleted
 def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntry):
 
-    message = LoyaltyCardRemovedBink(
+    message = LoyaltyCardRemoved(
         # Note: The message type will be auto added to the message
         channel=scheme_account_entry.user.bundle_id,
         transaction_id=str(uuid.uuid1()),
@@ -55,7 +55,7 @@ def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntr
 
 import kombu
 from kombu.mixins import ConsumerMixin
-from olympus_messaging import LoyaltyCardRemovedBink, Message, MessageDispatcher, build_message
+from olympus_messaging import LoyaltyCardRemoved, Message, MessageDispatcher, build_message
 import settings
 
 
@@ -67,7 +67,7 @@ class TaskConsumer(ConsumerMixin):
         self.dispatcher = MessageDispatcher()
         
         # you will need to a a similar entry for each per message linked to an on message receive method:
-        self.dispatcher.connect(LoyaltyCardRemovedBink, self.on_loyalty_card_removed_bink)
+        self.dispatcher.connect(LoyaltyCardRemoved, self.on_loyalty_card_removed_bink)
         # ... end of connects
 
     # This links the message receive to the handler method defined above.
@@ -77,10 +77,10 @@ class TaskConsumer(ConsumerMixin):
         finally:
             message.ack()
 
-    # handler method for one of the LoyaltyCardRemovedBink message example
+    # handler method for one of the LoyaltyCardRemoved message example
     @staticmethod
     def on_loyalty_card_removed_bink(message: Message) -> None:
-        message = cast(LoyaltyCardRemovedBink, message)
+        message = cast(LoyaltyCardRemoved, message)
 
         message_info = {
             "user_set": message.bink_user_id,
@@ -105,7 +105,7 @@ class TaskConsumer(ConsumerMixin):
 ```python
 @dataclass(frozen=True)
 @message_type("loyalty_card.removed.bink")
-class LoyaltyCardRemovedBink(Message):
+class LoyaltyCardRemoved(Message):
     loyalty_id: str
 
     def serialize_body(self) -> dict:
@@ -115,8 +115,8 @@ class LoyaltyCardRemovedBink(Message):
 4. Add the message dataclass name to the imports in __init.py 
 5. Add a test to the test_messaging - only a simple entry may be required eg
 ```python
-def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemovedBink) -> None:
-    _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemovedBink)
+def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemoved) -> None:
+    _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemoved)
 ````
 6. Run pytest on tests directory.
     * Run normally with pytest
