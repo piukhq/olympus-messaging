@@ -33,7 +33,7 @@ def loyalty_card_removed_bink_message() -> LoyaltyCardRemovedBink:
         request_id="test-request-124",
         account_id="12213335436436",  # main answer/card_number
         loyalty_plan="my_scheme_slug",
-        message_data={},
+        loyalty_id="a_loyalty_id_1",
     )
 
 

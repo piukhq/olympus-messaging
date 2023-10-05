@@ -36,7 +36,7 @@ def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntr
         request_id=str(scheme_account_entry.scheme_account.id),
         account_id=get_main_answer(scheme_account_entry.scheme_account),
         loyalty_plan=scheme_account_entry.scheme_account.scheme.slug,
-        message_data={}  # Empty body, but we may need to send join_data credentials
+        loyalty_id=The loyalty scheme membership id
         # - the above data is in header of message!
     )
     to_midas(message) 
@@ -89,7 +89,7 @@ class TaskConsumer(ConsumerMixin):
             "channel": message.channel,
             "account_id": message.account_id,  # merchant's main answer from hermes eg card number
             "scheme_identifier": message.loyalty_plan,
-            "message_uid": message.transaction_id
+            "loyalty_id": message.loyalty_id
         }
         
         # etc...
@@ -106,10 +106,10 @@ class TaskConsumer(ConsumerMixin):
 @dataclass(frozen=True)
 @message_type("loyalty_card.removed.bink")
 class LoyaltyCardRemovedBink(Message):
-    message_data: Mapping[str, str]
+    loyalty_id: str
 
     def serialize_body(self) -> dict:
-        return {"message_data": self.message_data}
+        return {"loyalty_id": self.loyalty_id}
 
 ```
 4. Add the message dataclass name to the imports in __init.py 
