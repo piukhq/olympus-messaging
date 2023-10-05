@@ -91,7 +91,4 @@ class JoinApplication(Message):
 @dataclass(frozen=True)
 @message_type("loyalty_card.removed.bink")
 class LoyaltyCardRemoved(Message):
-    loyalty_id: str
-
-    def serialize_body(self) -> dict:
-        return {"loyalty_id": self.loyalty_id}
+    pass

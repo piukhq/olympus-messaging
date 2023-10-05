@@ -33,7 +33,6 @@ def loyalty_card_removed_message() -> LoyaltyCardRemoved:
         request_id="test-request-124",
         account_id="12213335436436",  # main answer/card_number
         loyalty_plan="my_scheme_slug",
-        loyalty_id="a_loyalty_id_1",
     )
 
 
