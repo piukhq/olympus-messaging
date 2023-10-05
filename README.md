@@ -36,8 +36,6 @@ def send_midas_last_loyalty_card_removed(scheme_account_entry: SchemeAccountEntr
         request_id=str(scheme_account_entry.scheme_account.id),
         account_id=get_main_answer(scheme_account_entry.scheme_account),
         loyalty_plan=scheme_account_entry.scheme_account.scheme.slug,
-        loyalty_id=The loyalty scheme membership id
-        # - the above data is in header of message!
     )
     to_midas(message) 
 
@@ -79,7 +77,7 @@ class TaskConsumer(ConsumerMixin):
 
     # handler method for one of the LoyaltyCardRemoved message example
     @staticmethod
-    def on_loyalty_card_removed_bink(message: Message) -> None:
+    def on_loyalty_card_removed(message: Message) -> None:
         message = cast(LoyaltyCardRemoved, message)
 
         message_info = {
@@ -89,7 +87,6 @@ class TaskConsumer(ConsumerMixin):
             "channel": message.channel,
             "account_id": message.account_id,  # merchant's main answer from hermes eg card number
             "scheme_identifier": message.loyalty_plan,
-            "loyalty_id": message.loyalty_id
         }
         
         # etc...
@@ -106,16 +103,13 @@ class TaskConsumer(ConsumerMixin):
 @dataclass(frozen=True)
 @message_type("loyalty_card.removed.bink")
 class LoyaltyCardRemoved(Message):
-    loyalty_id: str
-
-    def serialize_body(self) -> dict:
-        return {"loyalty_id": self.loyalty_id}
+    pass
 
 ```
 4. Add the message dataclass name to the imports in __init.py 
 5. Add a test to the test_messaging - only a simple entry may be required eg
 ```python
-def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemoved) -> None:
+def test_loyalty_card_removed_dispatch(loyalty_card_removed_message: LoyaltyCardRemoved) -> None:
     _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemoved)
 ````
 6. Run pytest on tests directory.
