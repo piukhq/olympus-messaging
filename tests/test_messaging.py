@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
-from olympus_messaging import JoinApplication, LoyaltyCardRemovedBink, Message, MessageDispatcher, build_message
+from olympus_messaging import JoinApplication, LoyaltyCardRemoved, Message, MessageDispatcher, build_message
 from olympus_messaging.message import message_type
 
 
@@ -25,15 +25,15 @@ def join_message() -> JoinApplication:
 
 
 @pytest.fixture
-def loyalty_card_removed_bink_message() -> LoyaltyCardRemovedBink:
-    return LoyaltyCardRemovedBink(
+def loyalty_card_removed_message() -> LoyaltyCardRemoved:
+    return LoyaltyCardRemoved(
         channel="lloyds.test.com",
         transaction_id=str(uuid.uuid1()),
         bink_user_id=str(1234567),
         request_id="test-request-124",
         account_id="12213335436436",  # main answer/card_number
         loyalty_plan="my_scheme_slug",
-        message_data={},
+        loyalty_id="a_loyalty_id_1",
     )
 
 
@@ -65,8 +65,8 @@ your message class:
 """
 
 
-def test_loyalty_card_removed_bink_dispatch(loyalty_card_removed_bink_message: LoyaltyCardRemovedBink) -> None:
-    _message_dispatch_test(loyalty_card_removed_bink_message, LoyaltyCardRemovedBink)
+def test_loyalty_card_removed_dispatch(loyalty_card_removed_message: LoyaltyCardRemoved) -> None:
+    _message_dispatch_test(loyalty_card_removed_message, LoyaltyCardRemoved)
 
 
 def test_join_dispatch(join_message: JoinApplication) -> None:
