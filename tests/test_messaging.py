@@ -8,6 +8,9 @@ from olympus_messaging import JoinApplication, LoyaltyCardRemoved, Message, Mess
 from olympus_messaging.message import message_type
 
 
+TRANSACTION_ID = str(uuid.uuid1())
+
+
 @pytest.fixture
 def join_message() -> JoinApplication:
     return JoinApplication(
@@ -28,7 +31,7 @@ def join_message() -> JoinApplication:
 def loyalty_card_removed_message() -> LoyaltyCardRemoved:
     return LoyaltyCardRemoved(
         channel="lloyds.test.com",
-        transaction_id=str(uuid.uuid1()),
+        transaction_id=TRANSACTION_ID,
         bink_user_id=str(1234567),
         request_id="test-request-124",
         account_id="12213335436436",  # main answer/card_number
@@ -167,3 +170,18 @@ def test_build_message(join_message: JoinApplication) -> None:
     message = build_message(metadata, body)
 
     assert message == join_message
+
+
+def test_serialization_card_removed_with_standard_metadata(loyalty_card_removed_message: LoyaltyCardRemoved) -> None:
+    expected_metadata = {
+        "type": loyalty_card_removed_message.message_type,
+        "channel": loyalty_card_removed_message.channel,
+        "request-id": loyalty_card_removed_message.request_id,
+        "loyalty-plan": loyalty_card_removed_message.loyalty_plan,
+        "transaction-id": TRANSACTION_ID,
+        "account-id": "12213335436436",
+        "bink-user-id": "1234567",
+    }
+
+    assert loyalty_card_removed_message.metadata == expected_metadata
+    assert loyalty_card_removed_message.body == {}
