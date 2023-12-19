@@ -23,13 +23,13 @@ jobs:
           POSTGRES_DB: retry_tasks_lib_test
       redis:
         image: redis:latest
-        ports: 
+        ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install poetry
@@ -47,15 +47,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install poetry
       - run: poetry self add "poetry-dynamic-versioning[plugin]"
-      - run: poetry config repositories.pypicloud https://pypi.gb.bink.com/simple
-      - run: poetry config http-basic.pypicloud c02bed7a-4224-4fb4-82ad-17499e4d0e4a ${{ secrets.PYPICLOUD_PASSWORD }}
+      - run: poetry config repositories.azure https://pkgs.dev.azure.com/binkhq/_packaging/binkhq/pypi/upload/
+      - run: poetry config http-basic.azure jeff ${{ secrets.AZURE_DEVOPS_PAT }}
       - run: poetry build
-      - run: poetry publish -r pypicloud
+      - run: poetry publish -r azure
